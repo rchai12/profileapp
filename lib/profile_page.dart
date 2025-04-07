@@ -1,25 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'authentication.dart';
 
 class ProfilePage extends StatelessWidget {
-  final User user;
+  User user;
+  final AuthService _authService = AuthService();
 
-  const ProfilePage({super.key, required this.user});
+  ProfilePage({super.key, required this.user});
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getUserData() async {
-    return await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
-      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        future: getUserData(),
+      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
+        future: _authService.getUserData(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

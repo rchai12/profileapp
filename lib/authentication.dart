@@ -92,5 +92,50 @@ class AuthService {
     }
   }
 
+  Future<void> updateEmail({
+    required String email,
+    required String currentPassword,
+    required String newEmail,
+  }) async {
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      try {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: email,
+          password: currentPassword,
+        );
+        await user.reauthenticateWithCredential(credential);
+
+        await user.updateEmail(newEmail);
+        await user.reload();
+
+        print('Email updated successfully');
+      } on FirebaseAuthException catch (e) {
+        throw Exception('Email update failed: ${e.message}');
+      }
+    } else {
+      throw Exception('No user is currently signed in.');
+    }
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>?> getUserData() async {
+    User? user = _auth.currentUser;
+    
+    if (user != null) {
+      try {
+        return await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+      } catch (e) {
+        throw Exception('Error fetching user data: $e');
+      }
+    } else {
+      return null;
+    }
+  }
+
+
   User? get currentUser => _auth.currentUser;
 }
