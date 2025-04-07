@@ -107,10 +107,10 @@ class AuthService {
         );
         await user.reauthenticateWithCredential(credential);
 
-        await user.updateEmail(newEmail);
+        await user.verifyBeforeUpdateEmail(newEmail);
         await user.reload();
 
-        print('Email updated successfully');
+        print('Email updated successfully. Please check new Email Address for verification link.');
       } on FirebaseAuthException catch (e) {
         throw Exception('Email update failed: ${e.message}');
       }

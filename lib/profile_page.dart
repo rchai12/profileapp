@@ -55,6 +55,9 @@ class _ProfilePageState extends State<ProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Name updated successfully')),
       );
+      setState(() {
+        _isEditingName = false;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
@@ -80,13 +83,19 @@ class _ProfilePageState extends State<ProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Email updated successfully')),
       );
+      setState(() {
+        _isEditingEmail = false;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
+      print('Error: $e');
     } finally {
       setState(() {
         _isLoading = false;
+        _passwordController.clear();
+        _newEmailController.clear();
       });
     }
   }
@@ -105,15 +114,23 @@ class _ProfilePageState extends State<ProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Password updated successfully')),
       );
+      setState(() {
+        _isEditingPassword = false;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
+      print('Error: $e');
     } finally {
       setState(() {
         _isLoading = false;
+        _passwordController.clear();
+        _newPasswordController.clear();
       });
     }
+    _passwordController.clear();
+    _newPasswordController.clear();
   }
 
   @override
