@@ -1,10 +1,12 @@
+import 'package:activity13/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'authentication.dart';
+import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  final User user;
+  User user;
   final AuthService _authService = AuthService();
 
   ProfilePage({super.key, required this.user});
@@ -14,11 +16,11 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late TextEditingController _nameController;
-  late TextEditingController _emailController;
-  late TextEditingController _passwordController;
-  late TextEditingController _newEmailController;
-  late TextEditingController _newPasswordController;
+  late TextEditingController _nameController = TextEditingController();
+  late TextEditingController _emailController = TextEditingController();
+  late TextEditingController _passwordController = TextEditingController();
+  late TextEditingController _newEmailController = TextEditingController();
+  late TextEditingController _newPasswordController = TextEditingController();
 
   bool _isEditingName = false;
   bool _isEditingEmail = false;
@@ -28,11 +30,23 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.user.displayName);
-    _emailController = TextEditingController(text: widget.user.email);
-    _passwordController = TextEditingController();
-    _newEmailController = TextEditingController();
-    _newPasswordController = TextEditingController();
+    _initializeUserData();
+  }
+
+  Future<void> _initializeUserData() async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>>? userDoc =
+          await widget._authService.getUserData();
+      if (userDoc != null && userDoc.exists) {
+        var userData = userDoc.data()!;
+        widget.user = FirebaseAuth.instance.currentUser!;
+        _nameController = TextEditingController(text: userData['name']);
+        _emailController = TextEditingController(text: widget.user.email);
+        setState(() {});
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   @override
@@ -133,10 +147,34 @@ class _ProfilePageState extends State<ProfilePage> {
     _newPasswordController.clear();
   }
 
+  Future<void> _logout() async {
+    try {
+      await widget._authService.logoutUser();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } catch (e) {
+      print('Error logging out: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error logging out: $e')),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
