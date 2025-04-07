@@ -136,6 +136,23 @@ class AuthService {
     }
   }
 
+  Future<void> updateName(String newName) async {
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      try {
+        await user.updateProfile(displayName: newName);
+
+        await user.reload();
+
+        print('Name updated successfully');
+      } on FirebaseAuthException catch (e) {
+        throw Exception('Failed to update name: ${e.message}');
+      }
+    } else {
+      throw Exception('No user is currently signed in.');
+    }
+  }
 
   User? get currentUser => _auth.currentUser;
 }
