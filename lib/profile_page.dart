@@ -89,17 +89,19 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      await widget._authService.updateEmail(
+      User? updatedUser;
+      updatedUser = await widget._authService.updateEmail(
         email: widget.user.email!,
         currentPassword: _passwordController.text.trim(),
         newEmail: _newEmailController.text.trim(),
       );
+      setState(() {
+        widget.user = updatedUser!;
+        _isEditingEmail = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Email updated successfully')),
       );
-      setState(() {
-        _isEditingEmail = false;
-      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
@@ -163,6 +165,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,21 +183,32 @@ class _ProfilePageState extends State<ProfilePage> {
         child: ListView(
           children: [
             _isEditingName
-                ? TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(labelText: 'Full Name'),
-                  )
-                : ListTile(
-                    title: Text('Full Name: ${_nameController.text}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () {
-                        setState(() {
-                          _isEditingName = true;
-                        });
-                      },
+              ? Column (
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(labelText: 'Full Name'),
                     ),
+                    ElevatedButton(
+                      onPressed: _updateName,
+                      child: _isLoading
+                          ? CircularProgressIndicator()
+                          : Text('Save Name'),
+                    ),
+                  ],
+                )
+              : ListTile(
+                  title: Text('Full Name: ${_nameController.text}'),
+                  trailing: IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () {
+                      setState(() {
+                        _isEditingName = true;
+                      });
+                    },
                   ),
+                ),
             const SizedBox(height: 16),
             _isEditingEmail
                 ? Column(
@@ -210,24 +224,24 @@ class _ProfilePageState extends State<ProfilePage> {
                         obscureText: true,
                       ),
                       SizedBox(height: 10),
-                      ElevatedButton(
+                      /*ElevatedButton(
                         onPressed: _updateEmail,
                         child: _isLoading
                             ? CircularProgressIndicator()
                             : Text('Update Email'),
-                      ),
+                      ),*/
                     ],
                   )
                 : ListTile(
                     title: Text('Email: ${widget.user.email}'),
-                    trailing: IconButton(
+                    /*trailing: IconButton(
                       icon: Icon(Icons.edit),
                       onPressed: () {
                         setState(() {
                           _isEditingEmail = true;
                         });
                       },
-                    ),
+                    ),*/
                   ),
             const SizedBox(height: 16),
             _isEditingPassword
@@ -266,10 +280,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _updateName,
-              child: _isLoading
-                  ? CircularProgressIndicator()
-                  : Text('Save Name'),
+              onPressed: () async {
+                await widget._authService.currentUser!.reload();
+                widget.user = widget._authService.currentUser!;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Email refreshed to: ${widget.user.email}')),
+                );
+              },
+              child: Text('Refresh Account'),
             ),
           ],
         ),

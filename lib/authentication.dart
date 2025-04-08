@@ -92,7 +92,7 @@ class AuthService {
     }
   }
 
-  Future<void> updateEmail({
+  Future<User?> updateEmail({
     required String email,
     required String currentPassword,
     required String newEmail,
@@ -108,9 +108,9 @@ class AuthService {
         await user.reauthenticateWithCredential(credential);
 
         await user.verifyBeforeUpdateEmail(newEmail);
-        await user.reload();
-
-        print('Email updated successfully. Please check new Email Address for verification link.');
+        await _auth.currentUser!.reload();
+        print('New Email: ${_auth.currentUser!.email}');
+        return _auth.currentUser;
       } on FirebaseAuthException catch (e) {
         throw Exception('Email update failed: ${e.message}');
       }
